@@ -17,6 +17,9 @@ import PerformancePage from './pages/PerformancePage';
 import CostAnalysisPage from './pages/CostAnalysisPage';
 import DemandForecastPage from './pages/DemandForecastPage';
 import AIHubPage from './pages/AIHubPage';
+import AIHistoryPage from './pages/AIHistoryPage';
+import SLAPredictorPage from './pages/SLAPredictorPage';
+import AIToolsPage from './pages/AIToolsPage';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -70,6 +73,9 @@ function App() {
               <Route path="/cost-analysis" element={<CostAnalysisPage />} />
               <Route path="/demand-forecast" element={<DemandForecastPage />} />
               <Route path="/ai-hub" element={<AIHubPage />} />
+              <Route path="/ai-history" element={<AIHistoryPage />} />
+              <Route path="/sla-predictor" element={<SLAPredictorPage />} />
+              <Route path="/ai-tools" element={<AIToolsPage />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>

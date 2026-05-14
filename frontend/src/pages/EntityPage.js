@@ -28,16 +28,29 @@ const createEntityPage = ({ title, icon: Icon, api, fields, listColumns, badgeCo
     const [formData, setFormData] = useState({});
     const [isEditing, setIsEditing] = useState(false);
     const [error, setError] = useState('');
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const PAGE_SIZE = 20;
 
-    const loadItems = useCallback(async () => {
+    const loadItems = useCallback(async (pageNum = 1) => {
       try {
         setLoading(true);
-        const res = await api.getAll();
+        const res = await api.getAll({ page: pageNum, limit: PAGE_SIZE });
         const data = res.data;
-        if (Array.isArray(data)) setItems(data);
-        else {
+        if (data && data.data && data.pagination) {
+          setItems(data.data);
+          setTotalPages(data.pagination.totalPages || 1);
+          setTotalCount(data.pagination.total || data.data.length);
+        } else if (Array.isArray(data)) {
+          setItems(data);
+          setTotalPages(1);
+          setTotalCount(data.length);
+        } else {
           const key = Object.keys(data).find(k => Array.isArray(data[k]));
           setItems(key ? data[key] : []);
+          setTotalPages(1);
+          setTotalCount(key ? data[key].length : 0);
         }
       } catch (err) {
         console.error(err);
@@ -47,7 +60,12 @@ const createEntityPage = ({ title, icon: Icon, api, fields, listColumns, badgeCo
       }
     }, []);
 
-    useEffect(() => { loadItems(); }, [loadItems]);
+    useEffect(() => { loadItems(page); }, [loadItems, page]);
+
+    const handlePageChange = (newPage) => {
+      if (newPage < 1 || newPage > totalPages) return;
+      setPage(newPage);
+    };
 
     const filtered = items.filter(item => {
       if (!search) return true;
@@ -110,7 +128,7 @@ const createEntityPage = ({ title, icon: Icon, api, fields, listColumns, badgeCo
         <div style={st.header}>
           <div>
             <h2 style={st.title}><Icon size={24} /> {title}</h2>
-            <p style={st.subtitle}>{filtered.length} records</p>
+            <p style={st.subtitle}>{totalCount} total records</p>
           </div>
           <button style={st.addBtn} onClick={openCreate}><Plus size={18} /> New {entityName}</button>
         </div>
@@ -153,6 +171,34 @@ const createEntityPage = ({ title, icon: Icon, api, fields, listColumns, badgeCo
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div style={st.pagination}>
+            <button style={{ ...st.pageBtn, opacity: page <= 1 ? 0.4 : 1 }} onClick={() => handlePageChange(page - 1)} disabled={page <= 1}>
+              &laquo; Prev
+            </button>
+            {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+              let pageNum;
+              if (totalPages <= 7) pageNum = i + 1;
+              else if (page <= 4) pageNum = i + 1;
+              else if (page >= totalPages - 3) pageNum = totalPages - 6 + i;
+              else pageNum = page - 3 + i;
+              return (
+                <button
+                  key={pageNum}
+                  style={{ ...st.pageBtn, ...(pageNum === page ? st.pageActive : {}) }}
+                  onClick={() => handlePageChange(pageNum)}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+            <button style={{ ...st.pageBtn, opacity: page >= totalPages ? 0.4 : 1 }} onClick={() => handlePageChange(page + 1)} disabled={page >= totalPages}>
+              Next &raquo;
+            </button>
           </div>
         )}
 
@@ -239,6 +285,9 @@ const st = {
   formActions: { display: 'flex', justifyContent: 'flex-end', gap: '12px', paddingTop: '16px', borderTop: '1px solid #E2E8F0' },
   cancelBtn: { padding: '10px 20px', backgroundColor: '#F1F5F9', color: '#64748B', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', fontFamily: 'Inter, sans-serif' },
   saveBtn: { padding: '10px 24px', backgroundColor: '#3B82F6', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', fontFamily: 'Inter, sans-serif' },
+  pagination: { display: 'flex', alignItems: 'center', gap: '6px', marginTop: '16px', justifyContent: 'center' },
+  pageBtn: { padding: '8px 14px', border: '1px solid #E2E8F0', borderRadius: '8px', backgroundColor: '#fff', color: '#334155', fontSize: '14px', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: '500' },
+  pageActive: { backgroundColor: '#3B82F6', color: '#fff', borderColor: '#3B82F6' },
 };
 
 export default createEntityPage;

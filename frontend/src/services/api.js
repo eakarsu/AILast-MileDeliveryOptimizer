@@ -64,5 +64,7 @@ export const suggestImprovements = (data) => api.post('/ai/suggest-improvements'
 export const analyzeIncident = (data) => api.post('/ai/analyze-incident', data);
 export const optimizeFleet = (data) => api.post('/ai/optimize-fleet', data);
 export const predictPerformance = (data) => api.post('/ai/predict-performance', data);
+export const predictSLABreach = (data) => api.post('/ai/sla-breach-predictor', data);
+export const matchDriverRoute = (data) => api.post('/ai/driver-route-match', data);
 
 export default api;

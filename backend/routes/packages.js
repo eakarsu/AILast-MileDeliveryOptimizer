@@ -4,19 +4,27 @@ const { Package, Delivery, Warehouse } = require('../models');
 
 router.get('/', async (req, res) => {
   try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const offset = (page - 1) * limit;
     const where = {};
     if (req.query.status) where.status = req.query.status;
     if (req.query.type) where.type = req.query.type;
     if (req.query.warehouseId) where.warehouseId = req.query.warehouseId;
-    const packages = await Package.findAll({
+    const { count, rows } = await Package.findAndCountAll({
       where,
       include: [
         { model: Delivery, as: 'delivery', attributes: ['id', 'trackingNumber', 'status'] },
         { model: Warehouse, as: 'warehouse', attributes: ['id', 'name'] },
       ],
       order: [['createdAt', 'DESC']],
+      limit,
+      offset,
     });
-    res.json(packages);
+    res.json({
+      data: rows,
+      pagination: { total: count, page, limit, totalPages: Math.ceil(count / limit) },
+    });
   } catch (error) {
     console.error('Get packages error:', error);
     res.status(500).json({ error: error.message });

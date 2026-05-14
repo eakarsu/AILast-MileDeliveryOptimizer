@@ -36,13 +36,26 @@ const DeliveriesPage = () => {
   const [formData, setFormData] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const PAGE_SIZE = 20;
 
-  const loadItems = useCallback(async () => {
+  const loadItems = useCallback(async (pageNum = 1) => {
     try {
       setLoading(true);
-      const res = await deliveriesAPI.getAll();
+      const res = await deliveriesAPI.getAll({ page: pageNum, limit: PAGE_SIZE });
       const data = res.data;
-      setItems(Array.isArray(data) ? data : data.deliveries || data.data || []);
+      if (data && data.data && data.pagination) {
+        setItems(data.data);
+        setTotalPages(data.pagination.totalPages || 1);
+        setTotalCount(data.pagination.total || 0);
+      } else {
+        const arr = Array.isArray(data) ? data : data.deliveries || data.data || [];
+        setItems(arr);
+        setTotalPages(1);
+        setTotalCount(arr.length);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -50,7 +63,12 @@ const DeliveriesPage = () => {
     }
   }, []);
 
-  useEffect(() => { loadItems(); }, [loadItems]);
+  useEffect(() => { loadItems(page); }, [loadItems, page]);
+
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > totalPages) return;
+    setPage(newPage);
+  };
 
   const filtered = items.filter(item => {
     if (!search) return true;
@@ -101,7 +119,7 @@ const DeliveriesPage = () => {
       <div style={ps.header}>
         <div>
           <h2 style={ps.title}><Package size={24} /> Deliveries</h2>
-          <p style={ps.subtitle}>{filtered.length} total deliveries</p>
+          <p style={ps.subtitle}>{totalCount} total deliveries</p>
         </div>
         <button style={ps.addBtn} onClick={openCreate}><Plus size={18} /> New Delivery</button>
       </div>
@@ -157,6 +175,24 @@ const DeliveriesPage = () => {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div style={ps.pagination}>
+          <button style={{ ...ps.pageBtn, opacity: page <= 1 ? 0.4 : 1 }} onClick={() => handlePageChange(page - 1)} disabled={page <= 1}>&laquo; Prev</button>
+          {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+            let pn;
+            if (totalPages <= 7) pn = i + 1;
+            else if (page <= 4) pn = i + 1;
+            else if (page >= totalPages - 3) pn = totalPages - 6 + i;
+            else pn = page - 3 + i;
+            return (
+              <button key={pn} style={{ ...ps.pageBtn, ...(pn === page ? ps.pageActive : {}) }} onClick={() => handlePageChange(pn)}>{pn}</button>
+            );
+          })}
+          <button style={{ ...ps.pageBtn, opacity: page >= totalPages ? 0.4 : 1 }} onClick={() => handlePageChange(page + 1)} disabled={page >= totalPages}>Next &raquo;</button>
         </div>
       )}
 
@@ -293,6 +329,9 @@ const ps = {
     border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: '600',
     cursor: 'pointer', fontFamily: 'Inter, sans-serif',
   },
+  pagination: { display: 'flex', alignItems: 'center', gap: '6px', marginTop: '16px', justifyContent: 'center' },
+  pageBtn: { padding: '8px 14px', border: '1px solid #E2E8F0', borderRadius: '8px', backgroundColor: '#fff', color: '#334155', fontSize: '14px', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: '500' },
+  pageActive: { backgroundColor: '#3B82F6', color: '#fff', borderColor: '#3B82F6' },
 };
 
 export default DeliveriesPage;

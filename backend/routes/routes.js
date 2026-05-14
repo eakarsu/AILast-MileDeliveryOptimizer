@@ -1,18 +1,58 @@
 const express = require('express');
 const router = express.Router();
-const { Route, Driver } = require('../models');
+const { Route, Driver, RouteOptimizationHistory } = require('../models');
 
+// GET /api/routes/history — route optimization history (must be before /:id)
+router.get('/history', async (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const offset = (page - 1) * limit;
+    const where = {};
+    if (req.query.driverId) where.driverId = req.query.driverId;
+    if (req.query.routeId) where.routeId = req.query.routeId;
+    if (req.query.success !== undefined) where.success = req.query.success === 'true';
+
+    const { count, rows } = await RouteOptimizationHistory.findAndCountAll({
+      where,
+      include: [
+        { model: Driver, as: 'driver', attributes: ['id', 'name'], required: false },
+        { model: Route, as: 'route', attributes: ['id', 'name'], required: false },
+      ],
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
+    });
+    res.json({
+      data: rows,
+      pagination: { total: count, page, limit, totalPages: Math.ceil(count / limit) },
+    });
+  } catch (error) {
+    console.error('Get route optimization history error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET all routes with pagination
 router.get('/', async (req, res) => {
   try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const offset = (page - 1) * limit;
     const where = {};
     if (req.query.status) where.status = req.query.status;
     if (req.query.driverId) where.driverId = req.query.driverId;
-    const routes = await Route.findAll({
+    const { count, rows } = await Route.findAndCountAll({
       where,
       include: [{ model: Driver, as: 'driver', attributes: ['id', 'name'] }],
       order: [['createdAt', 'DESC']],
+      limit,
+      offset,
     });
-    res.json(routes);
+    res.json({
+      data: rows,
+      pagination: { total: count, page, limit, totalPages: Math.ceil(count / limit) },
+    });
   } catch (error) {
     console.error('Get routes error:', error);
     res.status(500).json({ error: error.message });
@@ -34,6 +74,10 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
+    const { name } = req.body;
+    if (!name || String(name).trim().length === 0) {
+      return res.status(422).json({ error: 'name is required' });
+    }
     const route = await Route.create(req.body);
     res.status(201).json(route);
   } catch (error) {
