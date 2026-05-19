@@ -13,6 +13,8 @@ const SLA = require('./SLA');
 const PerformanceMetric = require('./PerformanceMetric');
 const CostAnalysis = require('./CostAnalysis');
 const DemandForecast = require('./DemandForecast');
+const AIResult = require('./AIResult');
+const RouteOptimizationHistory = require('./RouteOptimizationHistory');
 
 // Associations
 // Driver <-> Vehicle
@@ -63,6 +65,17 @@ Zone.hasMany(CostAnalysis, { foreignKey: 'zoneId', as: 'costAnalyses' });
 DemandForecast.belongsTo(Zone, { foreignKey: 'zoneId', as: 'zone' });
 Zone.hasMany(DemandForecast, { foreignKey: 'zoneId', as: 'demandForecasts' });
 
+// AIResult associations
+AIResult.belongsTo(Delivery, { foreignKey: 'deliveryId', as: 'delivery', constraints: false });
+AIResult.belongsTo(Driver, { foreignKey: 'driverId', as: 'driver', constraints: false });
+AIResult.belongsTo(Route, { foreignKey: 'routeId', as: 'route', constraints: false });
+AIResult.belongsTo(Zone, { foreignKey: 'zoneId', as: 'zone', constraints: false });
+AIResult.belongsTo(Incident, { foreignKey: 'incidentId', as: 'incident', constraints: false });
+
+// RouteOptimizationHistory associations
+RouteOptimizationHistory.belongsTo(Driver, { foreignKey: 'driverId', as: 'driver', constraints: false });
+RouteOptimizationHistory.belongsTo(Route, { foreignKey: 'routeId', as: 'route', constraints: false });
+
 module.exports = {
   sequelize,
   User,
@@ -79,4 +92,6 @@ module.exports = {
   PerformanceMetric,
   CostAnalysis,
   DemandForecast,
+  AIResult,
+  RouteOptimizationHistory,
 };

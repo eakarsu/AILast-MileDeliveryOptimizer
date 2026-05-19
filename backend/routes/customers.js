@@ -4,11 +4,17 @@ const { Customer } = require('../models');
 
 router.get('/', async (req, res) => {
   try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const offset = (page - 1) * limit;
     const where = {};
     if (req.query.city) where.city = req.query.city;
     if (req.query.state) where.state = req.query.state;
-    const customers = await Customer.findAll({ where, order: [['name', 'ASC']] });
-    res.json(customers);
+    const { count, rows } = await Customer.findAndCountAll({ where, order: [['name', 'ASC']], limit, offset });
+    res.json({
+      data: rows,
+      pagination: { total: count, page, limit, totalPages: Math.ceil(count / limit) },
+    });
   } catch (error) {
     console.error('Get customers error:', error);
     res.status(500).json({ error: error.message });

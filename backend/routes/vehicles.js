@@ -4,11 +4,17 @@ const { Vehicle } = require('../models');
 
 router.get('/', async (req, res) => {
   try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const offset = (page - 1) * limit;
     const where = {};
     if (req.query.status) where.status = req.query.status;
     if (req.query.type) where.type = req.query.type;
-    const vehicles = await Vehicle.findAll({ where, order: [['plateNumber', 'ASC']] });
-    res.json(vehicles);
+    const { count, rows } = await Vehicle.findAndCountAll({ where, order: [['plateNumber', 'ASC']], limit, offset });
+    res.json({
+      data: rows,
+      pagination: { total: count, page, limit, totalPages: Math.ceil(count / limit) },
+    });
   } catch (error) {
     console.error('Get vehicles error:', error);
     res.status(500).json({ error: error.message });

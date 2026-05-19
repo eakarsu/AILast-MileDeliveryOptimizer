@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Package, Truck, Users, Building2, MapPin,
-  Map, Box, Route, AlertTriangle, Shield, BarChart3,
-  DollarSign, TrendingUp, Brain, ChevronLeft, ChevronRight, LogOut
+  Box, Route, AlertTriangle, Shield, BarChart3,
+  DollarSign, TrendingUp, Brain, ChevronLeft, ChevronRight, LogOut,
+  History, ShieldAlert, Layers
 } from 'lucide-react';
 
 const navItems = [
@@ -22,6 +23,10 @@ const navItems = [
   { path: '/cost-analysis', label: 'Cost Analysis', icon: DollarSign },
   { path: '/demand-forecast', label: 'Demand Forecast', icon: TrendingUp },
   { path: '/ai-hub', label: 'AI Hub', icon: Brain },
+  { path: '/ai-history', label: 'AI History', icon: History },
+  { path: '/sla-predictor', label: 'SLA Predictor', icon: ShieldAlert },
+  { path: '/ai-tools', label: 'AI Tools', icon: Brain },
+  { path: '/custom-views', label: 'Delivery Views', icon: Layers },
 ];
 
 const Sidebar = ({ onLogout }) => {

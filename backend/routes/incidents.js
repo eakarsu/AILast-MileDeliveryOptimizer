@@ -4,20 +4,28 @@ const { Incident, Delivery, Driver } = require('../models');
 
 router.get('/', async (req, res) => {
   try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const offset = (page - 1) * limit;
     const where = {};
     if (req.query.status) where.status = req.query.status;
     if (req.query.type) where.type = req.query.type;
     if (req.query.severity) where.severity = req.query.severity;
     if (req.query.driverId) where.driverId = req.query.driverId;
-    const incidents = await Incident.findAll({
+    const { count, rows } = await Incident.findAndCountAll({
       where,
       include: [
         { model: Delivery, as: 'delivery', attributes: ['id', 'trackingNumber'] },
         { model: Driver, as: 'driver', attributes: ['id', 'name'] },
       ],
       order: [['reportedAt', 'DESC']],
+      limit,
+      offset,
     });
-    res.json(incidents);
+    res.json({
+      data: rows,
+      pagination: { total: count, page, limit, totalPages: Math.ceil(count / limit) },
+    });
   } catch (error) {
     console.error('Get incidents error:', error);
     res.status(500).json({ error: error.message });

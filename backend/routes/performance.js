@@ -1,18 +1,29 @@
 const express = require('express');
 const router = express.Router();
 const { PerformanceMetric, Driver } = require('../models');
+const auth = require('../middleware/auth');
+
+router.use(auth);
 
 router.get('/', async (req, res) => {
   try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const offset = (page - 1) * limit;
     const where = {};
     if (req.query.driverId) where.driverId = req.query.driverId;
     if (req.query.date) where.date = req.query.date;
-    const metrics = await PerformanceMetric.findAll({
+    const { count, rows } = await PerformanceMetric.findAndCountAll({
       where,
       include: [{ model: Driver, as: 'driver', attributes: ['id', 'name'] }],
       order: [['date', 'DESC']],
+      limit,
+      offset,
     });
-    res.json(metrics);
+    res.json({
+      data: rows,
+      pagination: { total: count, page, limit, totalPages: Math.ceil(count / limit) },
+    });
   } catch (error) {
     console.error('Get performance metrics error:', error);
     res.status(500).json({ error: error.message });

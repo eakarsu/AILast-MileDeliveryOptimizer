@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import {
   Brain, Route, Clock, TrendingUp, DollarSign, Lightbulb,
-  AlertTriangle, Truck, BarChart3, ArrowLeft, Send
+  AlertTriangle, Truck, BarChart3, ArrowLeft, Send, UserCheck
 } from 'lucide-react';
 import {
   optimizeRoute, predictDeliveryTime, forecastDemand, analyzeCosts,
-  suggestImprovements, analyzeIncident, optimizeFleet, predictPerformance
+  suggestImprovements, analyzeIncident, optimizeFleet, predictPerformance,
+  matchDriverRoute
 } from '../services/api';
 import AIResultDisplay from '../components/AIResultDisplay';
 
@@ -137,6 +138,19 @@ const aiFeatures = [
       { key: 'metrics', label: 'Metrics to Predict', type: 'select', options: ['all', 'delivery_rate', 'on_time_rate', 'customer_rating', 'efficiency'] },
       { key: 'includeRecommendations', label: 'Include Recommendations', type: 'select', options: ['true', 'false'] },
     ],
+  },
+  {
+    id: 'driver-route-match',
+    title: 'Driver-Route Match',
+    description: 'AI-powered ranking of best drivers for a given route',
+    icon: UserCheck,
+    color: '#0891B2',
+    bg: '#ECFEFF',
+    apiCall: matchDriverRoute,
+    inputs: [
+      { key: 'routeId', label: 'Route ID', type: 'number', placeholder: 'e.g., 1' },
+    ],
+    renderResult: true,
   },
 ];
 

@@ -4,15 +4,23 @@ const { CostAnalysis, Zone } = require('../models');
 
 router.get('/', async (req, res) => {
   try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const offset = (page - 1) * limit;
     const where = {};
     if (req.query.zoneId) where.zoneId = req.query.zoneId;
     if (req.query.date) where.date = req.query.date;
-    const analyses = await CostAnalysis.findAll({
+    const { count, rows } = await CostAnalysis.findAndCountAll({
       where,
       include: [{ model: Zone, as: 'zone', attributes: ['id', 'name'] }],
       order: [['date', 'DESC']],
+      limit,
+      offset,
     });
-    res.json(analyses);
+    res.json({
+      data: rows,
+      pagination: { total: count, page, limit, totalPages: Math.ceil(count / limit) },
+    });
   } catch (error) {
     console.error('Get cost analyses error:', error);
     res.status(500).json({ error: error.message });

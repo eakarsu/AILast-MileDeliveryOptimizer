@@ -4,11 +4,17 @@ const { Zone } = require('../models');
 
 router.get('/', async (req, res) => {
   try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const offset = (page - 1) * limit;
     const where = {};
     if (req.query.status) where.status = req.query.status;
     if (req.query.demandLevel) where.demandLevel = req.query.demandLevel;
-    const zones = await Zone.findAll({ where, order: [['name', 'ASC']] });
-    res.json(zones);
+    const { count, rows } = await Zone.findAndCountAll({ where, order: [['name', 'ASC']], limit, offset });
+    res.json({
+      data: rows,
+      pagination: { total: count, page, limit, totalPages: Math.ceil(count / limit) },
+    });
   } catch (error) {
     console.error('Get zones error:', error);
     res.status(500).json({ error: error.message });
