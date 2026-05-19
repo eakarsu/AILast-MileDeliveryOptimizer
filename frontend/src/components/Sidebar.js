@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Package, Truck, Users, Building2, MapPin,
   Box, Route, AlertTriangle, Shield, BarChart3,
   DollarSign, TrendingUp, Brain, ChevronLeft, ChevronRight, LogOut,
-  History, ShieldAlert
+  History, ShieldAlert, Layers
 } from 'lucide-react';
 
 const navItems = [
@@ -26,6 +26,7 @@ const navItems = [
   { path: '/ai-history', label: 'AI History', icon: History },
   { path: '/sla-predictor', label: 'SLA Predictor', icon: ShieldAlert },
   { path: '/ai-tools', label: 'AI Tools', icon: Brain },
+  { path: '/custom-views', label: 'Delivery Views', icon: Layers },
 ];
 
 const Sidebar = ({ onLogout }) => {

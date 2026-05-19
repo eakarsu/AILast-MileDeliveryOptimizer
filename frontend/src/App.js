@@ -20,6 +20,7 @@ import AIHubPage from './pages/AIHubPage';
 import AIHistoryPage from './pages/AIHistoryPage';
 import SLAPredictorPage from './pages/SLAPredictorPage';
 import AIToolsPage from './pages/AIToolsPage';
+import CustomViewsPage from './pages/CustomViewsPage';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -76,6 +77,7 @@ function App() {
               <Route path="/ai-history" element={<AIHistoryPage />} />
               <Route path="/sla-predictor" element={<SLAPredictorPage />} />
               <Route path="/ai-tools" element={<AIToolsPage />} />
+              <Route path="/custom-views" element={<CustomViewsPage />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>

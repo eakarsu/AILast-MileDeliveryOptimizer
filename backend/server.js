@@ -57,6 +57,9 @@ app.use('/api/demand-forecasts', require('./routes/demandForecasts'));
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 
+// Custom Views (mounted BEFORE 404/error handler)
+app.use('/api/custom-views', require('./routes/customViews'));
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
