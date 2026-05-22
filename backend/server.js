@@ -60,6 +60,12 @@ app.use('/api/dashboard', require('./routes/dashboard'));
 // Custom Views (mounted BEFORE 404/error handler)
 app.use('/api/custom-views', require('./routes/customViews'));
 
+// Apply pass 7: real backlog implementations (mounted BEFORE 404/error handler)
+app.use('/api/proof-of-delivery', require('./routes/proof-of-delivery'));
+app.use('/api/returns', require('./routes/returns'));
+app.use('/api/public-tracking', require('./routes/public-tracking'));
+app.use('/api/porch-piracy-risk-map', require('./routes/porchPiracyRiskMap'));
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
@@ -88,6 +94,41 @@ async function start() {
         endpoint VARCHAR(100),
         input_data JSONB,
         result JSONB,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Apply pass 7: ensure proof_of_delivery + return_requests tables exist
+    await sequelize.query(`
+      CREATE TABLE IF NOT EXISTS proof_of_delivery (
+        id SERIAL PRIMARY KEY,
+        delivery_id INTEGER,
+        tracking_number VARCHAR(255),
+        recipient_name VARCHAR(255),
+        signature_data TEXT,
+        photo_data TEXT,
+        gps_lat DOUBLE PRECISION,
+        gps_lon DOUBLE PRECISION,
+        notes TEXT,
+        captured_by INTEGER,
+        captured_at TIMESTAMP DEFAULT NOW(),
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    await sequelize.query(`
+      CREATE TABLE IF NOT EXISTS return_requests (
+        id SERIAL PRIMARY KEY,
+        delivery_id INTEGER,
+        tracking_number VARCHAR(255),
+        customer_name VARCHAR(255),
+        customer_email VARCHAR(255),
+        reason VARCHAR(64),
+        description TEXT,
+        status VARCHAR(32) DEFAULT 'requested',
+        refund_amount DOUBLE PRECISION,
+        pickup_address TEXT,
+        requested_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW(),
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);

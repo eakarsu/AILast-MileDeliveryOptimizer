@@ -22,6 +22,15 @@ import SLAPredictorPage from './pages/SLAPredictorPage';
 import AIToolsPage from './pages/AIToolsPage';
 import CustomViewsPage from './pages/CustomViewsPage';
 
+import CodexCustomVizFeature from './pages/CodexCustomVizFeature';
+import CodexOperationsFeature from './pages/CodexOperationsFeature';
+
+// Apply pass 7: full backlog pages
+import ProofOfDeliveryPage from './pages/ProofOfDeliveryPage';
+import ReturnsPage from './pages/ReturnsPage';
+import PublicTrackingPage from './pages/PublicTrackingPage';
+import PorchPiracyRiskMap from './pages/PorchPiracyRiskMap';
+
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
 
@@ -59,6 +68,9 @@ function App() {
           </header>
           <main style={styles.content}>
             <Routes>
+        <Route path="/codex/custom-viz" element={<CodexCustomVizFeature />} />
+        <Route path="/codex/operations" element={<CodexOperationsFeature />} />
+
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/deliveries" element={<DeliveriesPage />} />
               <Route path="/drivers" element={<DriversPage />} />
@@ -78,6 +90,11 @@ function App() {
               <Route path="/sla-predictor" element={<SLAPredictorPage />} />
               <Route path="/ai-tools" element={<AIToolsPage />} />
               <Route path="/custom-views" element={<CustomViewsPage />} />
+              {/* Apply pass 7: full backlog routes */}
+              <Route path="/proof-of-delivery" element={<ProofOfDeliveryPage />} />
+              <Route path="/returns" element={<ReturnsPage />} />
+              <Route path="/track" element={<PublicTrackingPage />} />
+              <Route path="/porch-piracy-risk-map" element={<PorchPiracyRiskMap />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>

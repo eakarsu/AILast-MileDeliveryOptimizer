@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Package, Truck, Users, Building2, MapPin,
   Box, Route, AlertTriangle, Shield, BarChart3,
   DollarSign, TrendingUp, Brain, ChevronLeft, ChevronRight, LogOut,
-  History, ShieldAlert, Layers
+  History, ShieldAlert, Layers, CheckSquare, RotateCcw, Search
 } from 'lucide-react';
 
 const navItems = [
@@ -27,6 +27,10 @@ const navItems = [
   { path: '/sla-predictor', label: 'SLA Predictor', icon: ShieldAlert },
   { path: '/ai-tools', label: 'AI Tools', icon: Brain },
   { path: '/custom-views', label: 'Delivery Views', icon: Layers },
+  // Apply pass 7: full backlog
+  { path: '/proof-of-delivery', label: 'Proof of Delivery', icon: CheckSquare },
+  { path: '/returns', label: 'Returns', icon: RotateCcw },
+  { path: '/track', label: 'Public Tracking', icon: Search },
 ];
 
 const Sidebar = ({ onLogout }) => {
