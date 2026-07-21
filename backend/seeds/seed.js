@@ -1,5 +1,11 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
+if (process.env.ALLOW_DEMO_SEED !== 'true' || process.env.NODE_ENV === 'production') {
+  throw new Error('Demo seed is quarantined; set ALLOW_DEMO_SEED=true outside production to run explicitly');
+}
+if (!process.env.DEMO_SEED_PASSWORD || process.env.DEMO_SEED_PASSWORD.length < 12) {
+  throw new Error('DEMO_SEED_PASSWORD must be explicitly supplied with at least 12 characters');
+}
 
 const bcrypt = require('bcryptjs');
 const {
@@ -27,7 +33,7 @@ async function seed() {
     console.log('Database synced.');
 
     // ---- Users ----
-    const hashedPassword = await bcrypt.hash('password123', 10);
+    const hashedPassword = await bcrypt.hash(process.env.DEMO_SEED_PASSWORD, 10);
     const admin = await User.create({
       email: 'admin@lastmile.com',
       password: hashedPassword,
@@ -335,7 +341,7 @@ async function seed() {
     console.log(`${demandForecasts.length} demand forecasts created.`);
 
     console.log('\nSeed completed successfully!');
-    console.log('Admin login: admin@lastmile.com / password123');
+    console.log('Demo account was created with the caller-supplied password.');
     process.exit(0);
   } catch (error) {
     console.error('Seed error:', error);

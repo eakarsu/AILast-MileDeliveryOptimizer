@@ -59,6 +59,7 @@ app.use('/api/dashboard', require('./routes/dashboard'));
 
 // Custom Views (mounted BEFORE 404/error handler)
 app.use('/api/custom-views', require('./routes/customViews'));
+app.use('/api/governed-last-mile-dispatch', require('./governance'));
 
 // Apply pass 7: real backlog implementations (mounted BEFORE 404/error handler)
 app.use('/api/proof-of-delivery', require('./routes/proof-of-delivery'));
@@ -83,11 +84,14 @@ async function start() {
     await sequelize.authenticate();
     console.log('Database connected successfully.');
 
-    await sequelize.sync({ alter: true });
-    console.log('Database synced.');
+    if (process.env.AUTO_INIT_SCHEMA === 'true') {
+      await sequelize.sync({ alter: true });
+      console.log('Database synced.');
+    }
 
-    // Ensure ai_results table exists (safety net for raw queries)
-    await sequelize.query(`
+    if (process.env.AUTO_INIT_SCHEMA === 'true') {
+      // Legacy schema setup remains opt-in; normal startup is read-only.
+      await sequelize.query(`
       CREATE TABLE IF NOT EXISTS ai_results (
         id SERIAL PRIMARY KEY,
         user_id INTEGER,
@@ -98,8 +102,7 @@ async function start() {
       );
     `);
 
-    // Apply pass 7: ensure proof_of_delivery + return_requests tables exist
-    await sequelize.query(`
+      await sequelize.query(`
       CREATE TABLE IF NOT EXISTS proof_of_delivery (
         id SERIAL PRIMARY KEY,
         delivery_id INTEGER,
@@ -115,7 +118,7 @@ async function start() {
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);
-    await sequelize.query(`
+      await sequelize.query(`
       CREATE TABLE IF NOT EXISTS return_requests (
         id SERIAL PRIMARY KEY,
         delivery_id INTEGER,
@@ -131,7 +134,8 @@ async function start() {
         updated_at TIMESTAMP DEFAULT NOW(),
         created_at TIMESTAMP DEFAULT NOW()
       );
-    `);
+      `);
+    }
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
@@ -146,22 +150,13 @@ start();
 
 module.exports = app;
 
-// === BATCH 05 AUTO-MOUNT (custom feature suggestions) ===
+// Generated prototype routes are opt-in for isolated, non-production evaluation.
+if (process.env.ENABLE_GENERATED_ROUTES === 'true' && process.env.NODE_ENV !== 'production') {
 app.use('/api/delivery-planner-agent', require('./routes/delivery-planner-agent'));
 app.use('/api/vision-pod', require('./routes/vision-pod'));
 app.use('/api/anomaly-stream', require('./routes/anomaly-stream'));
 app.use('/api/customer-comms-agent', require('./routes/customer-comms-agent'));
 app.use('/api/carbon-tracker', require('./routes/carbon-tracker'));
 
-// === Batch 05 Gaps & Frontend Mounts ===
-try { const _gap_anomaly_detection = require('./routes/gap-anomaly-detection'); app.use('/api/gap-anomaly-detection', _gap_anomaly_detection); } catch(e) { console.error('gap mount fail anomaly-detection:', e.message); }
-try { const _gap_customer_churn_predictor = require('./routes/gap-customer-churn-predictor'); app.use('/api/gap-customer-churn-predictor', _gap_customer_churn_predictor); } catch(e) { console.error('gap mount fail customer-churn-predictor:', e.message); }
-try { const _gap_dynamic_pricing_recommender = require('./routes/gap-dynamic-pricing-recommender'); app.use('/api/gap-dynamic-pricing-recommender', _gap_dynamic_pricing_recommender); } catch(e) { console.error('gap mount fail dynamic-pricing-recommender:', e.message); }
-try { const _gap_vehicle_maintenance_alert = require('./routes/gap-vehicle-maintenance-alert'); app.use('/api/gap-vehicle-maintenance-alert', _gap_vehicle_maintenance_alert); } catch(e) { console.error('gap mount fail vehicle-maintenance-alert:', e.message); }
-try { const _gap_real_time = require('./routes/gap-real-time'); app.use('/api/gap-real-time', _gap_real_time); } catch(e) { console.error('gap mount fail real-time:', e.message); }
-try { const _gap_proof_of_delivery = require('./routes/gap-proof-of-delivery'); app.use('/api/gap-proof-of-delivery', _gap_proof_of_delivery); } catch(e) { console.error('gap mount fail proof-of-delivery:', e.message); }
-try { const _gap_customer = require('./routes/gap-customer'); app.use('/api/gap-customer', _gap_customer); } catch(e) { console.error('gap mount fail customer:', e.message); }
-try { const _gap_webhooks = require('./routes/gap-webhooks'); app.use('/api/gap-webhooks', _gap_webhooks); } catch(e) { console.error('gap mount fail webhooks:', e.message); }
-try { const _gap_return = require('./routes/gap-return'); app.use('/api/gap-return', _gap_return); } catch(e) { console.error('gap mount fail return:', e.message); }
-try { const _gap_mobile = require('./routes/gap-mobile'); app.use('/api/gap-mobile', _gap_mobile); } catch(e) { console.error('gap mount fail mobile:', e.message); }
-// === End Batch 05 Mounts ===
+}
+// Generated gap routes remain deliberately unmounted.

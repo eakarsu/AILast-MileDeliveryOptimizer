@@ -22,12 +22,6 @@ const LoginPage = ({ onLogin }) => {
     }
   };
 
-  const fillDemo = () => {
-    setEmail('admin@lastmile.com');
-    setPassword('password123');
-    setError('');
-  };
-
   return (
     <div style={styles.container}>
       <div style={styles.card}>
@@ -82,9 +76,6 @@ const LoginPage = ({ onLogin }) => {
           </button>
         </form>
 
-        <button onClick={fillDemo} style={styles.demoBtn}>
-          Auto Fill Demo Credentials
-        </button>
       </div>
     </div>
   );
