@@ -1,4 +1,4 @@
-const rateLimit = require('express-rate-limit');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 
 /**
  * Rate limiter for AI endpoints.
@@ -10,7 +10,7 @@ const aiRateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'AI rate limit exceeded. Max 20 requests/hour.' },
-  keyGenerator: (req) => req.user ? `user:${req.user.id || req.user.userId}` : req.ip,
+  keyGenerator: (req) => req.user ? `user:${req.user.id || req.user.userId}` : ipKeyGenerator(req.ip),
 });
 
 /**

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 // Apply pass 7: Real proof-of-delivery capture (signature + photo)
 // Uses POST /api/proof-of-delivery
-const API_BASE = 'http://localhost:3601/api';
+const API_BASE = '/api';
 
 export default function ProofOfDeliveryPage() {
   const [trackingNumber, setTrackingNumber] = useState('');

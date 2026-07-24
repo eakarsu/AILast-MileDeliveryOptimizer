@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 // Apply pass 7: Customer-facing public tracking lookup.
 // Uses GET /api/public-tracking/:trackingNumber (no auth required).
-const API_BASE = 'http://localhost:3601/api';
+const API_BASE = '/api';
 
 export default function PublicTrackingPage() {
   const [trackingNumber, setTrackingNumber] = useState('');

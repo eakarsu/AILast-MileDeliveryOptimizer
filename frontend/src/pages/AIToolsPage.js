@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3001/api',
+  baseURL: '/api',
   headers: { 'Content-Type': 'application/json' },
 });
 api.interceptors.request.use((config) => {

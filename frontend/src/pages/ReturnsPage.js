@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 // Apply pass 7: Return / Reverse Logistics workflow UI
 // Uses /api/returns CRUD + /api/returns/:id/status workflow.
-const API_BASE = 'http://localhost:3601/api';
+const API_BASE = '/api';
 const STATUSES = ['requested', 'approved', 'picked_up', 'received', 'refunded', 'rejected'];
 const REASONS = ['damaged', 'wrong_item', 'not_needed', 'late_delivery', 'quality_issue', 'other'];
 

@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
+const auth = require('../middleware/auth');
 router.use((req, res, next) => {
   if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32 ||
       !/^[A-Za-z0-9][A-Za-z0-9._:-]+$/.test(process.env.GOVERNANCE_TENANT_ID || '')) {
@@ -74,6 +75,16 @@ router.post('/login', async (req, res) => {
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/me', auth, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id, { attributes: { exclude: ['password'] } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    return res.json({ user });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
 });
 

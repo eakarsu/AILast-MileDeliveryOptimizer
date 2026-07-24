@@ -3,6 +3,9 @@ const router = express.Router();
 const openRouterService = require('../services/openrouter');
 const { AIResult, RouteOptimizationHistory, Delivery, Driver, Zone, Route } = require('../models');
 const { aiRateLimiter } = require('../middleware/rateLimiter');
+const auth = require('../middleware/auth');
+
+router.use(auth);
 
 /**
  * Helper: persist AI result to DB.

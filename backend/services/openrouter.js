@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const OPENROUTER_URL = `${(process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1').replace(/\/$/, '')}/chat/completions`;
 
 /**
  * Structured JSON parser — handles raw JSON, markdown-fenced JSON, and embedded JSON objects.
