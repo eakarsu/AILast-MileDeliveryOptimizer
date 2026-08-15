@@ -1,3 +1,4 @@
+import GeneratedAiResponse from './GeneratedAiResponse';
 import React, { useState } from 'react';
 import axios from 'axios';
 
@@ -154,9 +155,7 @@ export default function AIToolsPage() {
         {result && (
           <div style={styles.result}>
             <h3 style={{ marginTop: 0 }}>Result</h3>
-            <pre style={styles.pre}>
-              {typeof result === 'string' ? result : JSON.stringify(result, null, 2)}
-            </pre>
+            <GeneratedAiResponse response={result} />
           </div>
         )}
       </div>
