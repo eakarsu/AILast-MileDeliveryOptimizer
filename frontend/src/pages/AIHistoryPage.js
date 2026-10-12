@@ -1,3 +1,4 @@
+import FormattedAIReport from "../components/FormattedAIReport";
 import React, { useState, useEffect, useCallback } from 'react';
 import { History, ChevronDown, ChevronUp } from 'lucide-react';
 import api from '../services/api';
@@ -136,13 +137,13 @@ const AIHistoryPage = () => {
                             {rec.parsedResult && (
                               <div>
                                 <div style={st.jsonLabel}>Parsed Result</div>
-                                <pre style={st.jsonBlock}>{JSON.stringify(rec.parsedResult, null, 2)}</pre>
+                                <FormattedAIReport response={rec.parsedResult} />
                               </div>
                             )}
                             {!rec.parsedResult && rec.rawResponse && (
                               <div>
                                 <div style={st.jsonLabel}>Raw Response</div>
-                                <pre style={{ ...st.jsonBlock, color: '#64748B' }}>{rec.rawResponse}</pre>
+                                <FormattedAIReport response={rec.rawResponse} title="Saved AI result" />
                               </div>
                             )}
                             {rec.inputPayload && (

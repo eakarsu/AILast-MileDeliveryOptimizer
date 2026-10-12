@@ -1,3 +1,5 @@
+import NativeAIControls from '../components/NativeAIControls.jsx';
+import { AI_HUB_PRESETS, createPresetControls } from '../components/DeliveryAIPresets';
 import React, { useState } from 'react';
 import {
   Brain, Route, Clock, TrendingUp, DollarSign, Lightbulb,
@@ -195,10 +197,13 @@ const AIHubPage = () => {
   };
 
   const updateField = (key, value) => setFormData(prev => ({ ...prev, [key]: value }));
+  const presetControls = activeFeature
+    ? createPresetControls(activeFeature.inputs, AI_HUB_PRESETS[activeFeature.id], setFormData)
+    : [];
 
   if (activeFeature) {
     return (
-      <div>
+      <NativeAIControls busy={loading} context="last-mile delivery planning" presets={presetControls}><div>
         <button style={st.backBtn} onClick={goBack}>
           <ArrowLeft size={18} /> Back to AI Hub
         </button>
@@ -221,14 +226,14 @@ const AIHubPage = () => {
                 <div key={input.key} style={{ ...st.inputGroup, ...(input.type === 'textarea' ? { gridColumn: 'span 2' } : {}) }}>
                   <label style={st.inputLabel}>{input.label}</label>
                   {input.type === 'select' ? (
-                    <select style={st.inputField} value={formData[input.key] || ''} onChange={e => updateField(input.key, e.target.value)}>
+                    <select data-ai-field={input.key} style={st.inputField} value={formData[input.key] || ''} onChange={e => updateField(input.key, e.target.value)}>
                       <option value="">Select...</option>
                       {input.options.map(o => <option key={o} value={o}>{o}</option>)}
                     </select>
                   ) : input.type === 'textarea' ? (
-                    <textarea style={{ ...st.inputField, minHeight: '80px', resize: 'vertical' }} placeholder={input.placeholder} value={formData[input.key] || ''} onChange={e => updateField(input.key, e.target.value)} />
+                    <textarea data-ai-field={input.key} style={{ ...st.inputField, minHeight: '80px', resize: 'vertical' }} placeholder={input.placeholder} value={formData[input.key] || ''} onChange={e => updateField(input.key, e.target.value)} />
                   ) : (
-                    <input style={st.inputField} type={input.type} placeholder={input.placeholder} value={formData[input.key] || ''} onChange={e => updateField(input.key, e.target.value)} />
+                    <input data-ai-field={input.key} style={st.inputField} type={input.type} placeholder={input.placeholder} value={formData[input.key] || ''} onChange={e => updateField(input.key, e.target.value)} />
                   )}
                 </div>
               ))}
@@ -256,7 +261,7 @@ const AIHubPage = () => {
             <AIResultDisplay result={result} loading={loading} />
           </div>
         </div>
-      </div>
+      </div></NativeAIControls>
     );
   }
 

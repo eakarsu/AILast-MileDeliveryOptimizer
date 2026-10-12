@@ -48,6 +48,13 @@ function renderObject(obj, depth) {
     const label = key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase());
 
     if (Array.isArray(value)) {
+      const tableColumns = value.length && value.every(item => item && typeof item === 'object' && !Array.isArray(item))
+        ? [...new Set(value.flatMap(item => Object.keys(item)))]
+        : [];
+      const tabular = tableColumns.length && value.every(item => tableColumns.every(column => {
+        const cell = item[column];
+        return cell === null || cell === undefined || typeof cell !== 'object';
+      }));
       return (
         <div key={key} style={{ ...styles.section, marginLeft: depth * 8 }}>
           <div style={styles.sectionHeader}>
@@ -55,22 +62,31 @@ function renderObject(obj, depth) {
             <h3 style={styles.sectionTitle}>{label}</h3>
             <span style={styles.badge}>{value.length}</span>
           </div>
-          <div style={styles.sectionBody}>
-            {value.map((item, i) => (
-              <div key={i} style={styles.listItem}>
-                {typeof item === 'object' ? (
-                  <div style={styles.card}>
-                    {renderObject(item, depth + 1)}
-                  </div>
-                ) : (
-                  <div style={styles.bulletItem}>
-                    <span style={styles.bullet} />
-                    <span>{String(item)}</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+          {tabular ? (
+            <div style={styles.tableWrap}>
+              <table style={styles.table}>
+                <thead><tr>{tableColumns.map(column => <th key={column} style={styles.th}>{column.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}</th>)}</tr></thead>
+                <tbody>{value.map((item, i) => <tr key={i}>{tableColumns.map(column => <td key={column} style={styles.td}>{item[column] === null || item[column] === undefined ? '—' : String(item[column])}</td>)}</tr>)}</tbody>
+              </table>
+            </div>
+          ) : (
+            <div style={styles.sectionBody}>
+              {value.map((item, i) => (
+                <div key={i} style={styles.listItem}>
+                  {typeof item === 'object' ? (
+                    <div style={styles.card}>
+                      {renderObject(item, depth + 1)}
+                    </div>
+                  ) : (
+                    <div style={styles.bulletItem}>
+                      <span style={styles.bullet} />
+                      <span>{String(item)}</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       );
     }
@@ -89,7 +105,7 @@ function renderObject(obj, depth) {
       );
     }
 
-    if (typeof value === 'number' && key.toLowerCase().includes('score') || key.toLowerCase().includes('rate') || key.toLowerCase().includes('percent')) {
+    if (typeof value === 'number' && (key.toLowerCase().includes('score') || key.toLowerCase().includes('rate') || key.toLowerCase().includes('percent'))) {
       const pct = value > 1 ? value : value * 100;
       return (
         <div key={key} style={styles.metricRow}>
@@ -180,6 +196,10 @@ const styles = {
   listItem: {},
   card: { backgroundColor: '#F8FAFC', borderRadius: '8px', padding: '12px 16px', border: '1px solid #E2E8F0' },
   nestedCard: { backgroundColor: '#F8FAFC', borderRadius: '8px', padding: '16px', border: '1px solid #E2E8F0' },
+  tableWrap: { overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '10px' },
+  table: { width: '100%', borderCollapse: 'collapse', backgroundColor: '#fff', fontSize: '13px' },
+  th: { padding: '10px 12px', textAlign: 'left', color: '#475569', backgroundColor: '#F8FAFC', textTransform: 'capitalize', borderBottom: '1px solid #E2E8F0' },
+  td: { padding: '10px 12px', color: '#1E293B', borderBottom: '1px solid #F1F5F9', verticalAlign: 'top' },
   bulletItem: { display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '6px 0' },
   bullet: { width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#3B82F6', marginTop: '6px', flexShrink: 0 },
   metricRow: { display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 0' },

@@ -1,3 +1,4 @@
+import AIReportLibrary from "./components/AIReportLibrary";
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
@@ -58,7 +59,7 @@ function App() {
   }
 
   return (
-    <Router>
+    <><AIReportLibrary floating /><Router>
       <div style={styles.layout}>
         <Sidebar onLogout={handleLogout} />
         <div style={styles.mainArea}>
@@ -100,7 +101,7 @@ function App() {
           </main>
         </div>
       </div>
-    </Router>
+    </Router></>
   );
 }
 

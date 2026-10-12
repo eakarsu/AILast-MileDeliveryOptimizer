@@ -1,3 +1,5 @@
+import NativeAIControls from '../components/NativeAIControls.jsx';
+import { createPresetControls, SLA_PRESETS } from '../components/DeliveryAIPresets';
 import React, { useState } from 'react';
 import { ShieldAlert, Send, AlertTriangle } from 'lucide-react';
 import api from '../services/api';
@@ -32,9 +34,14 @@ const SLAPredictorPage = () => {
   };
 
   const riskStyle = result ? getRiskStyle(result.risk_level) : null;
+  const presetControls = createPresetControls(
+    [{ key: 'deliveryId' }],
+    SLA_PRESETS,
+    (values) => setDeliveryId(values.deliveryId),
+  );
 
   return (
-    <div>
+    <NativeAIControls busy={loading} context="SLA risk review" presets={presetControls}><div>
       <div style={st.header}>
         <div style={st.headerIcon}>
           <ShieldAlert size={28} />
@@ -50,7 +57,7 @@ const SLAPredictorPage = () => {
         <div style={st.inputRow}>
           <div style={st.inputGroup}>
             <label style={st.label}>Delivery ID</label>
-            <input
+            <input data-ai-field={"deliveryId"}
               style={st.input}
               type="number"
               placeholder="e.g. 42"
@@ -115,7 +122,7 @@ const SLAPredictorPage = () => {
           )}
         </div>
       )}
-    </div>
+    </div></NativeAIControls>
   );
 };
 

@@ -1,3 +1,5 @@
+import NativeAIControls from '../components/NativeAIControls.jsx';
+import { AI_TOOL_PRESETS, createPresetControls } from '../components/DeliveryAIPresets';
 import GeneratedAiResponse from './GeneratedAiResponse';
 import React, { useState } from 'react';
 import axios from 'axios';
@@ -89,6 +91,11 @@ export default function AIToolsPage() {
   const [error, setError] = useState(null);
 
   const tool = TOOLS.find(t => t.key === active);
+  const presetControls = createPresetControls(
+    tool.fields,
+    AI_TOOL_PRESETS[tool.key],
+    setInputs,
+  );
 
   const submit = async () => {
     setLoading(true); setError(null); setResult(null);
@@ -109,7 +116,7 @@ export default function AIToolsPage() {
   };
 
   return (
-    <div style={styles.container}>
+    <NativeAIControls busy={loading} context="last-mile operations review" presets={presetControls}><div style={styles.container}>
       <h1 style={styles.header}>AI Tools</h1>
       <div style={styles.cardsGrid}>
         {TOOLS.map(t => (
@@ -133,12 +140,12 @@ export default function AIToolsPage() {
           <div key={field.key} style={styles.field}>
             <label style={styles.label}>{field.label}{field.required ? ' *' : ''}</label>
             {field.type === 'textarea' ? (
-              <textarea rows={4} style={styles.input}
+              <textarea data-ai-field={field.key} rows={4} style={styles.input}
                 value={inputs[field.key] || ''}
                 onChange={e => setInputs(prev => ({ ...prev, [field.key]: e.target.value }))}
                 placeholder={field.placeholder || ''} />
             ) : (
-              <input type={field.type || 'text'} style={styles.input}
+              <input data-ai-field={field.key} type={field.type || 'text'} style={styles.input}
                 value={inputs[field.key] || ''}
                 onChange={e => setInputs(prev => ({ ...prev, [field.key]: e.target.value }))}
                 placeholder={field.placeholder || ''} />
@@ -159,6 +166,6 @@ export default function AIToolsPage() {
           </div>
         )}
       </div>
-    </div>
+    </div></NativeAIControls>
   );
 }

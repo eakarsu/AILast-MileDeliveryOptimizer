@@ -1,24 +1,50 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Truck, Mail, Lock, LogIn } from 'lucide-react';
 import { login } from '../services/api';
 
+const DEMO_EMAIL = process.env.REACT_APP_DEMO_EMAIL || 'admin@lastmile.com';
+const DEMO_PASSWORD = process.env.REACT_APP_DEMO_PASSWORD || '';
+
 const LoginPage = ({ onLogin }) => {
+  const demoLoginLock = useRef(false);
+  const [demoLoginBusy, setDemoLoginBusy] = useState(false);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, demoLoginCredentials) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const res = await login(email, password);
+      const res = await login((demoLoginCredentials?.email ?? email), (demoLoginCredentials?.password ?? password));
       onLogin(res.data.token);
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async (event) => {
+    event.preventDefault();
+    if (demoLoginLock.current) return;
+    setEmail(DEMO_EMAIL);
+    if (!DEMO_PASSWORD) {
+      setPassword('');
+      setError('Demo login is not configured for this build. Enter the existing demo password or configure REACT_APP_DEMO_PASSWORD.');
+      return;
+    }
+    demoLoginLock.current = true;
+    setDemoLoginBusy(true);
+    setPassword(DEMO_PASSWORD);
+    try {
+      await handleSubmit(event, { email: DEMO_EMAIL, password: DEMO_PASSWORD });
+    } finally {
+      demoLoginLock.current = false;
+      setDemoLoginBusy(false);
     }
   };
 
@@ -72,14 +98,14 @@ const LoginPage = ({ onLogin }) => {
 
           <button
             type="button"
-            onClick={() => { setEmail(process.env.REACT_APP_DEMO_EMAIL || ''); setPassword(process.env.REACT_APP_DEMO_PASSWORD || ''); }}
-            disabled={!process.env.REACT_APP_DEMO_EMAIL || !process.env.REACT_APP_DEMO_PASSWORD}
-            aria-label="Auto Fill Demo Credentials"
+            onClick={handleDemoLogin}
+            disabled={demoLoginBusy || loading}
+            aria-label="Log In as Demo"
             style={{ width: '100%', marginBottom: '12px', padding: '10px 14px', borderRadius: '8px', border: '1px solid currentColor', background: 'transparent', cursor: 'pointer' }}
           >
-            Auto Fill Demo Credentials
+            {demoLoginBusy ? 'Signing in as Demo...' : 'Log In as Demo'}
           </button>
-          <button type="submit" disabled={loading} style={{ ...styles.loginBtn, opacity: loading ? 0.7 : 1 }}>
+          <button type="submit" disabled={loading || demoLoginBusy} style={{ ...styles.loginBtn, opacity: loading || demoLoginBusy ? 0.7 : 1 }}>
             <LogIn size={18} />
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
