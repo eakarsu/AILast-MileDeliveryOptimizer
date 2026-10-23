@@ -1,0 +1,23 @@
+'use strict';
+process.env.JWT_SECRET='test-secret-test-secret-test-secret-1234';
+delete process.env.OPENROUTER_API_KEY; delete process.env.OPENAI_API_KEY;
+const test=require('node:test'); const assert=require('node:assert');
+const express=require('express'); const jwt=require('jsonwebtoken');
+const mod=require('../routes/fpWave38b');
+const auth=require('../middleware/auth'); 
+test('fp38b tasks auth/search/export/ai', async (t)=>{
+  const app=express(); app.use(express.json()); app.use('/api', mod.createRouter(auth));
+  const srv=app.listen(0); await new Promise(r=>srv.once('listening',r)); const base='http://127.0.0.1:'+srv.address().port;
+  t.after(()=>srv.close());
+  const tok=jwt.sign({id:7,email:'a@test'}, process.env.JWT_SECRET); const H={Authorization:'Bearer '+tok,'Content-Type':'application/json'};
+  let r=await fetch(base+'/api/tasks'); assert.strictEqual(r.status,401);
+  r=await fetch(base+'/api/tasks',{method:'POST',headers:H,body:JSON.stringify({title:'Alpha delivery',status:'todo',priority:'high',notes:'note'})}); assert.strictEqual(r.status,201); const c=await r.json();
+  r=await fetch(base+'/api/tasks',{method:'POST',headers:H,body:JSON.stringify({title:'Beta other',status:'done'})}); assert.strictEqual(r.status,201);
+  r=await fetch(base+'/api/tasks?q=Alpha',{headers:H}); let b=await r.json(); assert.strictEqual(b.tasks.length,1);
+  r=await fetch(base+'/api/tasks?status=done',{headers:H}); b=await r.json(); assert.strictEqual(b.tasks.length,1);
+  r=await fetch(base+'/api/tasks/'+c.id,{method:'PUT',headers:H,body:JSON.stringify({status:'doing'})}); b=await r.json(); assert.strictEqual(b.status,'doing');
+  r=await fetch(base+'/api/tasks/export?format=csv',{headers:H}); assert.match(r.headers.get('content-type')||'',/text\/csv/); assert.match(await r.text(),/Alpha/);
+  r=await fetch(base+'/api/tasks/export?format=json',{headers:H}); b=await r.json(); assert.strictEqual(b.count,2);
+  r=await fetch(base+'/api/ai-tasks/route-priority',{method:'POST',headers:H,body:JSON.stringify({records:[]})}); b=await r.json(); assert.strictEqual(b.aiGenerated,false); assert.ok(Array.isArray(b.sections)); assert.ok(b.sections.some(s=>s.value===0)); assert.ok(b.sections.some(s=>s.value===false||s.value===''));
+  r=await fetch(base+'/api/ai-tasks/route-priority',{method:'POST',headers:H,body:JSON.stringify({})}); b=await r.json(); assert.strictEqual(b.aiGenerated,false);
+});

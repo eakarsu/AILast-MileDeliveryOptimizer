@@ -56,6 +56,7 @@ app.use('/api/cost-analysis', require('./routes/costAnalysis'));
 app.use('/api/demand-forecasts', require('./routes/demandForecasts'));
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api', require('./routes/fpWave38b').createRouter(require('./middleware/auth')));
 
 // Custom Views (mounted BEFORE 404/error handler)
 app.use('/api/custom-views', require('./routes/customViews'));
